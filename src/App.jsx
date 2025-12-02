@@ -3,6 +3,7 @@ import Login from './pages/Login';
 import Menu from './pages/Menu';
 import AdminProducts from './pages/AdminProducts';
 import Kitchen from './pages/Kitchen';
+import Dashboard from './pages/Dashboard';
 
 // Componente para proteger rutas (si no hay token, manda al login)
 const PrivateRoute = ({ children }) => {
@@ -48,8 +49,18 @@ function App() {
             </PrivateRoute>
           } 
         />
+
+        {/* 4. Dashboard de Métricas (Admin) */}
+        <Route 
+          path="/dashboard" 
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          } 
+        />
         
-        {/* Redirección por defecto (si entran a una ruta desconocida) */}
+        {/* Redirección por defecto */}
         <Route path="*" element={<Navigate to="/menu" replace />} />
       </Routes>
     </BrowserRouter>
