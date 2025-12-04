@@ -4,11 +4,12 @@ import axios from 'axios';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
 import { motion, AnimatePresence } from 'framer-motion';
-// IMPORTAMOS LOS ICONOS
 import { 
   UtensilsCrossed, ClipboardList, Package, ChefHat, BarChart3, Users, LogOut, 
-  ShoppingCart, Gem, ChevronLeft, Trash2, Edit, CheckCircle, XCircle 
+  ShoppingCart, Gem, ChevronLeft, Trash2, Edit, CheckCircle, XCircle, Menu as MenuIcon 
 } from 'lucide-react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -79,7 +80,6 @@ const orderService = {
   updateStatus: async (id, status) => (await api.patch(`/orders/${id}/status`, { estado: status })).data
 };
 const dashboardService = { getMetrics: async () => (await api.get('/dashboard')).data };
-// Agregamos servicio de usuarios (faltaba)
 const userService = {
   getAll: async () => (await api.get('/users')).data,
   adjustPoints: async (userId, points) => (await api.post('/loyalty/adjust', { userId, points })).data
@@ -107,12 +107,14 @@ function Login() {
     try {
       if (isRegistering) {
         await authService.register(formData);
-        alert('¡Registro exitoso!'); setIsRegistering(false);
+        toast.success('¡Registro exitoso! Por favor inicia sesión.'); 
+        setIsRegistering(false);
       } else {
         await authService.login(formData.email, formData.password);
-        window.location.href = '/menu';
+        toast.success('¡Bienvenido a Crepa Urbana!', { icon: "👋" });
+        setTimeout(() => window.location.href = '/menu', 500);
       }
-    } catch (e) { alert('Error: ' + (e.response?.data?.message || 'Error')); }
+    } catch (e) { toast.error(e.response?.data?.message || 'Error en la operación'); }
   };
 
   return (
@@ -144,11 +146,19 @@ function Menu() {
   useEffect(() => { productService.getAll().then(data => { setProducts(data); setLoading(false); }).catch(() => setLoading(false)); }, []);
 
   const handleBuy = async (p) => {
-    if (!window.confirm(`¿Pedir ${p.nombre}?`)) return;
+    // ELIMINADO EL WINDOW.CONFIRM --> Ahora es compra directa en 1 clic
     try {
       const res = await orderService.create([{ producto_id: p.id, cantidad: 1 }]);
-      if(window.confirm(`¡Ganaste ${res.data.puntos_ganados} pts! ¿Ver pedido?`)) navigate('/my-orders');
-    } catch { alert('Error'); }
+      
+      // Toast elegante con acción
+      toast.success(
+        <div onClick={() => navigate('/my-orders')} style={{ cursor: 'pointer' }}>
+          <strong>¡{p.nombre} pedida!</strong><br/>
+          +{res.data.puntos_ganados} pts 💎 (Clic para ver)
+        </div>,
+        { autoClose: 3000 }
+      );
+    } catch { toast.error('Error al procesar el pedido'); }
   };
 
   const filtered = selectedCategory === 0 ? products : products.filter(p => p.categoria_id === selectedCategory);
@@ -238,7 +248,7 @@ function MyOrders() {
   );
 }
 
-// 4. ADMIN: INVENTARIO (CORREGIDO)
+// 4. ADMIN: INVENTARIO (Sin confirm, solo Toast)
 function AdminProducts() {
   const [products, setProducts] = useState([]);
   const [formData, setFormData] = useState({ nombre: '', descripcion: '', precio: '', categoria_id: 1, imagen_url: '' });
@@ -248,12 +258,20 @@ function AdminProducts() {
     e.preventDefault();
     await productService.create(formData);
     productService.getAll().then(setProducts);
-    alert('Guardado');
+    toast.success('Producto creado exitosamente'); 
   };
 
   const toggleStock = async (p) => {
     await productService.update(p.id, { disponible: !p.disponible });
     productService.getAll().then(setProducts);
+    toast.info(`Stock actualizado: ${p.nombre}`);
+  };
+
+  // Eliminado window.confirm para borrar (directo)
+  const deleteProduct = async (id) => {
+    await productService.delete(id);
+    productService.getAll().then(setProducts);
+    toast.error('Producto eliminado');
   };
 
   return (
@@ -283,7 +301,7 @@ function AdminProducts() {
                 <button onClick={() => toggleStock(p)} style={{ ...styles.buttonBase, width:'auto', padding:'5px 10px', fontSize:'0.8em', borderColor: p.disponible ? THEME.success : THEME.danger, color: p.disponible ? THEME.success : THEME.danger, background: 'transparent', border: '1px solid' }}>
                   {p.disponible ? 'ACTIVO' : 'AGOTADO'}
                 </button>
-                <button onClick={() => productService.delete(p.id).then(()=>productService.getAll().then(setProducts))} style={{background:'transparent', border:'none', color: THEME.danger, cursor:'pointer'}}><Trash2 /></button>
+                <button onClick={() => deleteProduct(p.id)} style={{background:'transparent', border:'none', color: THEME.danger, cursor:'pointer'}}><Trash2 /></button>
               </div>
             </div>
           ))}
@@ -293,7 +311,7 @@ function AdminProducts() {
   );
 }
 
-// 5. ADMIN: COCINA (CORREGIDO)
+// 5. ADMIN: COCINA
 function Kitchen() {
   const [orders, setOrders] = useState([]);
   useEffect(() => {
@@ -306,6 +324,7 @@ function Kitchen() {
   const advance = async (o) => {
     const next = o.estado === 'pendiente' ? 'en_preparacion' : o.estado === 'en_preparacion' ? 'listo' : 'entregado';
     await orderService.updateStatus(o.id, next);
+    toast.success(`Orden #${o.id} actualizada`); 
   };
 
   return (
@@ -334,7 +353,7 @@ function Kitchen() {
   );
 }
 
-// 6. ADMIN: DASHBOARD (CORREGIDO)
+// 6. ADMIN: DASHBOARD
 function Dashboard() {
   const [metrics, setMetrics] = useState(null);
   useEffect(() => { dashboardService.getMetrics().then(setMetrics).catch(() => setMetrics({})); }, []);
@@ -377,16 +396,19 @@ function Dashboard() {
   );
 }
 
-// 7. ADMIN: USUARIOS (CORREGIDO)
+// 7. ADMIN: USUARIOS (Sin prompt, con prompt personalizado sería mejor pero usamos window.prompt por simplicidad ya que no bloquea tanto)
 function AdminUsers() {
   const [users, setUsers] = useState([]);
   useEffect(() => { userService.getAll().then(setUsers); }, []);
 
   const adjust = async (u) => {
-    const p = prompt('Puntos (+/-):');
+    // Aquí el prompt es inevitable sin crear un modal personalizado, 
+    // pero al menos no es una "alerta" de información.
+    const p = prompt('Puntos (+/-):'); 
     if(p) {
       await userService.adjustPoints(u.id, parseInt(p));
       userService.getAll().then(setUsers);
+      toast.success('Puntos actualizados'); // TOAST
     }
   };
 
@@ -502,6 +524,8 @@ function App() {
       <div style={{ backgroundColor: THEME.bg, minHeight: '100vh' }}>
         {isAuth && <Navigation isAdmin={isAdmin} />}
         <AnimatedRoutes />
+        {/* TOAST CONTAINER AQUÍ AL FINAL */}
+        <ToastContainer theme="dark" position="bottom-right" />
       </div>
     </BrowserRouter>
   );
