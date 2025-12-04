@@ -12,12 +12,30 @@ const THEME = {
   bg: '#121212', cardBg: '#1e1e1e', text: '#e0e0e0', gold: '#d4af37', border: '#333333', success: '#27ae60', danger: '#e74c3c'
 };
 
+const responsiveStyles = `
+  .desktop-nav { display: none !important; }
+  .mobile-nav { display: flex !important; }
+  .app-content { padding-bottom: 80px; }
+  .hero-title { font-size: 2.5rem !important; }
+
+  @media (min-width: 768px) {
+    .desktop-nav { display: flex !important; }
+    .mobile-nav { display: none !important; }
+    .app-content { padding-bottom: 0; }
+    .hero-title { font-size: 3.5rem !important; }
+  }
+`;
+
 const styles = {
   container: { minHeight: '100vh', backgroundColor: THEME.bg, color: THEME.text, fontFamily: "'Segoe UI', sans-serif" },
   input: { width: '100%', padding: '12px', marginBottom: '15px', borderRadius: '8px', border: `1px solid ${THEME.border}`, backgroundColor: '#2c2c2c', color: 'white' },
   buttonBase: { width: '100%', padding: '12px', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem' },
   card: { backgroundColor: THEME.cardBg, borderRadius: '20px', padding: '15px', border: `1px solid ${THEME.border}`, overflow: 'hidden' },
-  navLink: { color: THEME.text, textDecoration: 'none', padding: '5px 10px', fontSize: '0.95rem' }
+  bottomBarLink: { 
+    flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
+    textDecoration: 'none', color: '#888', fontSize: '0.7rem', padding: '8px 0', cursor: 'pointer', minWidth: '0' // minWidth ayuda a que quepan más iconos
+  },
+  navLink: { color: THEME.text, textDecoration: 'none', padding: '5px 10px', fontSize: '0.95rem', cursor: 'pointer' }
 };
 
 // --- ANIMACIONES ---
@@ -59,25 +77,13 @@ const dashboardService = { getMetrics: async () => (await api.get('/dashboard'))
 
 // --- COMPONENTES VISUALES ---
 const PageTransition = ({ children }) => (
-  <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit">
+  <motion.div variants={pageVariants} initial="initial" animate="animate" exit="exit" className="app-content">
     {children}
   </motion.div>
 );
 
-// NUEVO: Componente Skeleton (Caja pulsante)
 const Skeleton = ({ width = '100%', height = '20px', style }) => (
-  <motion.div
-    animate={{ opacity: [0.3, 0.6, 0.3] }} // Efecto pulso
-    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-    style={{
-      width,
-      height,
-      backgroundColor: '#333',
-      borderRadius: '8px',
-      marginBottom: '10px',
-      ...style
-    }}
-  />
+  <motion.div animate={{ opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }} style={{ width, height, backgroundColor: '#333', borderRadius: '8px', marginBottom: '10px', ...style }} />
 );
 
 // 1. LOGIN
@@ -101,44 +107,31 @@ function Login() {
 
   return (
     <div style={{ ...styles.container, display: 'flex', justifyContent: 'center', alignItems: 'center', backgroundImage: 'linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)), url(https://images.unsplash.com/photo-1519340333755-56e9c1d04579?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
-      <motion.div 
-        initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.5 }}
-        style={{ ...styles.card, width: '100%', maxWidth: '400px', padding: '40px', backdropFilter: 'blur(10px)', backgroundColor: 'rgba(30,30,30,0.8)' }}
-      >
+      <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.5 }} style={{ ...styles.card, width: '100%', maxWidth: '400px', padding: '40px', backdropFilter: 'blur(10px)', backgroundColor: 'rgba(30,30,30,0.8)' }}>
         <h1 style={{ textAlign: 'center', color: THEME.gold, fontFamily: "'Playfair Display', serif", fontSize: '2.5rem' }}>Crepa Urbana</h1>
         <p style={{ textAlign: 'center', color: '#ccc', marginBottom: '20px' }}>La experiencia dulce</p>
         <form onSubmit={handleSubmit}>
           {isRegistering && <input style={styles.input} placeholder="Nombre" name="nombre" onChange={handleChange} required />}
           <input style={styles.input} placeholder="Email" name="email" onChange={handleChange} required />
           <input style={styles.input} placeholder="Password" type="password" name="password" onChange={handleChange} required />
-          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="submit" style={{ ...styles.buttonBase, background: THEME.gold, color: '#000' }}>
-            {isRegistering ? 'Registrarse' : 'Entrar'}
-          </motion.button>
-          <p onClick={() => setIsRegistering(!isRegistering)} style={{ textAlign: 'center', color: THEME.gold, cursor: 'pointer', marginTop: '15px', textDecoration: 'underline' }}>
-            {isRegistering ? '¿Ya tienes cuenta?' : '¿Crear cuenta?'}
-          </p>
+          <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="submit" style={{ ...styles.buttonBase, background: THEME.gold, color: '#000' }}>{isRegistering ? 'Registrarse' : 'Entrar'}</motion.button>
+          <p onClick={() => setIsRegistering(!isRegistering)} style={{ textAlign: 'center', color: THEME.gold, cursor: 'pointer', marginTop: '15px', textDecoration: 'underline' }}>{isRegistering ? '¿Ya tienes cuenta?' : '¿Crear cuenta?'}</p>
         </form>
       </motion.div>
     </div>
   );
 }
 
-// 2. MENÚ (CON SKELETONS)
+// 2. MENÚ
 function Menu() {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true); // Estado de carga
+  const [loading, setLoading] = useState(true);
   const [user] = useState(JSON.parse(localStorage.getItem('user') || '{}'));
   const [selectedCategory, setSelectedCategory] = useState(0);
   const navigate = useNavigate();
-
   const categories = [{id:0,name:'Todas'},{id:1,name:'Dulces 🍫'},{id:2,name:'Saladas 🧀'},{id:3,name:'Postres 🍦'},{id:4,name:'Bebidas 🥤'}];
 
-  useEffect(() => {
-    // Simulamos un pequeño delay para ver el skeleton si la red es muy rápida
-    productService.getAll()
-      .then(data => { setProducts(data); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, []);
+  useEffect(() => { productService.getAll().then(data => { setProducts(data); setLoading(false); }).catch(() => setLoading(false)); }, []);
 
   const handleBuy = async (p) => {
     if (!window.confirm(`¿Pedir ${p.nombre}?`)) return;
@@ -153,16 +146,14 @@ function Menu() {
   return (
     <PageTransition>
       <div style={{ ...styles.container }}>
-        {/* HERO */}
-        <div style={{ height: '350px', backgroundImage: 'linear-gradient(to bottom, rgba(0,0,0,0.3), #121212), url(https://images.unsplash.com/photo-1484723091739-30a097e8f929?ixlib=rb-4.0.3&auto=format&fit=crop&w=1547&q=80)', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: '20px' }}>
-          <motion.h1 initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} style={{ fontFamily: "'Playfair Display', serif", fontSize: '3.5rem', color: THEME.gold, marginBottom: '10px', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>Bienvenido a la experiencia dulce</motion.h1>
-          <motion.p initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} style={{ fontSize: '1.2rem', color: '#fff', textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>Hola, {user.nombre} • Tienes 💎 {user.puntos_actuales} puntos</motion.p>
+        <div style={{ height: '300px', backgroundImage: 'linear-gradient(to bottom, rgba(0,0,0,0.3), #121212), url(https://images.unsplash.com/photo-1484723091739-30a097e8f929?ixlib=rb-4.0.3&auto=format&fit=crop&w=1547&q=80)', backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', textAlign: 'center', padding: '20px' }}>
+          <motion.h1 initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="hero-title" style={{ fontFamily: "'Playfair Display', serif", color: THEME.gold, marginBottom: '10px', textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>Crepa Urbana</motion.h1>
+          <motion.p initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} style={{ fontSize: '1.2rem', color: '#fff', textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>Hola, {user.nombre} • 💎 {user.puntos_actuales}</motion.p>
         </div>
 
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
             <h2 style={{ color: THEME.text, borderLeft: `4px solid ${THEME.gold}`, paddingLeft: '10px' }}>Nuestro Menú</h2>
-            <button onClick={() => { authService.logout(); navigate('/login'); }} style={{ background: 'transparent', border: `1px solid ${THEME.border}`, color: '#888', padding: '5px 15px', borderRadius: '20px', cursor: 'pointer' }}>Cerrar Sesión</button>
           </div>
 
           <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '20px', marginBottom: '10px' }}>
@@ -171,22 +162,8 @@ function Menu() {
             ))}
           </div>
 
-          {/* GRID: SI CARGA, MUESTRA SKELETONS; SI NO, PRODUCTOS */}
           {loading ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '30px' }}>
-              {[1, 2, 3, 4, 5, 6].map(n => (
-                <div key={n} style={styles.card}>
-                  <Skeleton height="180px" style={{ borderRadius: '8px', marginBottom: '15px' }} />
-                  <Skeleton height="25px" width="70%" />
-                  <Skeleton height="15px" width="90%" />
-                  <Skeleton height="15px" width="60%" />
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-                    <Skeleton height="30px" width="30%" />
-                    <Skeleton height="40px" width="40%" style={{ borderRadius: '25px' }} />
-                  </div>
-                </div>
-              ))}
-            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '30px' }}>{[1,2,3,4].map(n => <div key={n} style={styles.card}><Skeleton height="180px" style={{borderRadius:'8px', marginBottom:'15px'}} /><Skeleton height="20px" width="70%" /><Skeleton height="40px" width="40%" style={{marginTop:'20px'}} /></div>)}</div>
           ) : (
             <motion.div variants={containerStagger} initial="hidden" animate="show" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '30px' }}>
               {filtered.map(p => (
@@ -216,35 +193,24 @@ function MyOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  useEffect(() => { 
-    orderService.getMyOrders()
-      .then(data => { setOrders(data); setLoading(false); })
-      .catch(() => setLoading(false)); 
-  }, []);
-
+  useEffect(() => { orderService.getMyOrders().then(data => { setOrders(data); setLoading(false); }).catch(() => setLoading(false)); }, []);
   const statusColors = { 'pendiente': '#f39c12', 'en_preparacion': '#3498db', 'listo': '#2ecc71', 'entregado': '#7f8c8d' };
 
   return (
     <PageTransition>
       <div style={{ ...styles.container, padding: '20px' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <motion.button whileHover={{ x: -5 }} onClick={() => navigate('/menu')} style={{ background: 'transparent', color: THEME.gold, border: 'none', fontSize: '1.2rem', cursor: 'pointer', marginBottom: '20px' }}>⬅ Regresar</motion.button>
           <h1 style={{ fontFamily: "'Playfair Display', serif", color: THEME.gold }}>Mis Pedidos</h1>
-          
-          {loading ? (
-            <div style={{ display: 'grid', gap: '20px' }}>
-              {[1, 2, 3].map(n => <Skeleton key={n} height="120px" style={{ borderRadius: '12px' }} />)}
-            </div>
-          ) : (
+          {loading ? <div style={{ display: 'grid', gap: '20px' }}>{[1,2].map(n => <Skeleton key={n} height="120px" style={{borderRadius:'12px'}} />)}</div> : (
             <motion.div variants={containerStagger} initial="hidden" animate="show" style={{ display: 'grid', gap: '20px' }}>
               {orders.map(o => (
                 <motion.div key={o.id} variants={cardItem} style={styles.card}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${THEME.border}`, paddingBottom: '10px', marginBottom: '10px' }}>
-                    <div><span style={{ fontWeight: 'bold', fontSize: '1.1em' }}>Orden #{o.id}</span><div style={{ fontSize: '0.8em', color: '#888' }}>{new Date(o.fecha_creacion).toLocaleString()}</div></div>
-                    <div style={{ textAlign: 'right' }}><span style={{ background: statusColors[o.estado] || '#555', color: '#fff', padding: '4px 10px', borderRadius: '4px', fontSize: '0.8em', fontWeight: 'bold', textTransform: 'uppercase' }}>{o.estado.replace('_', ' ')}</span></div>
+                    <div><span style={{ fontWeight: 'bold', fontSize: '1.1em' }}>#{o.id}</span></div>
+                    <span style={{ background: statusColors[o.estado] || '#555', color: '#fff', padding: '4px 10px', borderRadius: '4px', fontSize: '0.8em', fontWeight: 'bold', textTransform: 'uppercase' }}>{o.estado.replace('_', ' ')}</span>
                   </div>
-                  {o.items?.map(i => (<div key={i.id} style={{display:'flex', justifyContent:'space-between', marginBottom:'5px', fontSize:'0.95em'}}><span>{i.cantidad}x {i.Product?.nombre}</span><span style={{ color: '#888' }}>${i.precio_unitario}</span></div>))}
-                  <div style={{ marginTop: '15px', borderTop: `1px dashed ${THEME.border}`, paddingTop: '10px', textAlign: 'right', fontSize: '1.2em', color: THEME.gold, fontWeight: 'bold' }}>Total: ${o.total_pagar}</div>
+                  {o.items?.map(i => (<div key={i.id} style={{display:'flex', justifyContent:'space-between', color:'#ccc'}}><span>{i.cantidad}x {i.Product?.nombre}</span><span>${i.precio_unitario}</span></div>))}
+                  <div style={{ marginTop: '15px', textAlign: 'right', fontSize: '1.2em', fontWeight: 'bold', color: THEME.gold }}>${o.total_pagar}</div>
                 </motion.div>
               ))}
             </motion.div>
@@ -255,54 +221,92 @@ function MyOrders() {
   );
 }
 
-// 4. ADMIN (PRODUCTOS)
-function AdminProducts() { return <PageTransition><div style={{...styles.container, padding: '20px'}}><h2>Inventario</h2></div></PageTransition>; }
-function Kitchen() { return <PageTransition><div style={{...styles.container, padding: '20px'}}><h2>Cocina</h2></div></PageTransition>; }
+// 4. COMPONENTES ADMIN SIMPLIFICADOS
+function AdminProducts() { return <PageTransition><div style={{...styles.container, padding:'20px'}}><h2>Inventario</h2></div></PageTransition>; }
+function Kitchen() { return <PageTransition><div style={{...styles.container, padding:'20px'}}><h2>Cocina</h2></div></PageTransition>; }
+function Dashboard() { return <PageTransition><div style={{...styles.container, padding:'20px'}}><h2>Dashboard</h2></div></PageTransition>; }
+function AdminUsers() { return <PageTransition><div style={{...styles.container, padding:'20px'}}><h2>Usuarios</h2></div></PageTransition>; }
 
-// 6. DASHBOARD (CON SKELETONS)
-function Dashboard() {
-  const [metrics, setMetrics] = useState(null);
-  useEffect(() => { dashboardService.getMetrics().then(setMetrics).catch(() => setMetrics({})); }, []);
+// --- NAV BAR COMPONENTES ---
 
-  if (!metrics) return (
-    <div style={{ ...styles.container, padding: '20px' }}>
-      <Skeleton height="40px" width="300px" style={{marginBottom: '30px'}} />
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
-        <Skeleton height="150px" style={{borderRadius: '12px'}} />
-        <Skeleton height="150px" style={{borderRadius: '12px'}} />
-      </div>
-      <Skeleton height="400px" style={{borderRadius: '12px'}} />
-    </div>
-  );
-
-  const chartData = {
-    labels: metrics.top_productos?.map(i => i.Product.nombre),
-    datasets: [{ label: 'Ventas', data: metrics.top_productos?.map(i => i.total_vendido), backgroundColor: THEME.gold }]
+// NavItem Actualizado: Soporta onClick y maneja navegación
+const NavItem = ({ to, icon, label, active, onClick }) => {
+  const navigate = useNavigate();
+  const handleClick = (e) => {
+    e.preventDefault();
+    if (onClick) onClick();
+    else navigate(to);
   };
 
   return (
-    <div style={{ ...styles.container, padding: '20px' }}>
-      <h2 style={{ color: THEME.gold }}>Dashboard</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
-        <div style={{ ...styles.card, textAlign: 'center' }}>
-          <div style={{ fontSize: '0.9em', color: '#888' }}>Ventas Hoy</div>
-          <div style={{ fontSize: '2.5em', fontWeight: 'bold', color: THEME.success }}>${metrics.ventas_hoy}</div>
-        </div>
-        <div style={{ ...styles.card, textAlign: 'center' }}>
-          <div style={{ fontSize: '0.9em', color: '#888' }}>Ventas Mes</div>
-          <div style={{ fontSize: '2.5em', fontWeight: 'bold', color: THEME.gold }}>${metrics.ventas_mes}</div>
-        </div>
-      </div>
-      <div style={{ ...styles.card, height: '400px' }}>
-        <Bar data={chartData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: 'white' } } }, scales: { y: { ticks: { color: 'white' } }, x: { ticks: { color: 'white' } } } }} />
-      </div>
-    </div>
+    <a href={to} onClick={handleClick} style={{ ...styles.bottomBarLink, color: active ? THEME.gold : '#888' }}>
+      <span style={{ fontSize: '1.5rem', marginBottom: '2px' }}>{icon}</span>
+      <span>{label}</span>
+    </a>
+  );
+};
+
+function Navigation({ isAdmin }) {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const path = location.pathname;
+
+  const handleLogout = () => {
+    authService.logout();
+    navigate('/login');
+  };
+
+  return (
+    <>
+      {/* DESKTOP NAV (Arriba) */}
+      <nav className="desktop-nav" style={{ backgroundColor: '#000', borderBottom: `1px solid ${THEME.border}`, padding: '15px 40px', position: 'sticky', top: 0, zIndex: 100, gap: '20px', alignItems: 'center' }}>
+        <span style={{color: THEME.gold, fontWeight:'bold', fontSize:'1.5rem', marginRight:'auto', fontFamily: "'Playfair Display', serif"}}>CREPA URBANA</span>
+        <a href="/menu" style={{ ...styles.navLink, color: path === '/menu' ? THEME.gold : 'white' }}>MENÚ</a>
+        {!isAdmin && <a href="/my-orders" style={{ ...styles.navLink, color: path === '/my-orders' ? THEME.gold : 'white' }}>MIS PEDIDOS</a>}
+        {isAdmin && (
+          <>
+            <a href="/admin-menu" style={{ ...styles.navLink, color: path === '/admin-menu' ? THEME.gold : 'white' }}>INVENTARIO</a>
+            <a href="/kitchen" style={{ ...styles.navLink, color: path === '/kitchen' ? THEME.gold : 'white' }}>COCINA</a>
+            <a href="/dashboard" style={{ ...styles.navLink, color: path === '/dashboard' ? THEME.gold : 'white' }}>DASHBOARD</a>
+            <a href="/admin-users" style={{ ...styles.navLink, color: path === '/admin-users' ? THEME.gold : 'white' }}>USUARIOS</a>
+          </>
+        )}
+        {/* BOTÓN SALIR DESKTOP */}
+        <button onClick={handleLogout} style={{ marginLeft: '10px', background: 'transparent', border: `1px solid ${THEME.danger}`, color: THEME.danger, padding: '5px 15px', borderRadius: '20px', cursor: 'pointer', fontWeight: 'bold' }}>
+          Salir
+        </button>
+      </nav>
+
+      {/* MOBILE NAV (Abajo) */}
+      <nav className="mobile-nav" style={{ 
+        backgroundColor: '#000', borderTop: `1px solid ${THEME.gold}`, 
+        position: 'fixed', bottom: 0, left: 0, width: '100%', 
+        zIndex: 100, paddingBottom: '5px', 
+        boxShadow: '0 -5px 20px rgba(0,0,0,0.5)'
+      }}>
+        {isAdmin ? (
+          <>
+            <NavItem to="/menu" icon="🥞" label="Menú" active={path === '/menu'} />
+            <NavItem to="/admin-menu" icon="📦" label="Stock" active={path === '/admin-menu'} />
+            <NavItem to="/kitchen" icon="👨‍🍳" label="Cocina" active={path === '/kitchen'} />
+            <NavItem to="/dashboard" icon="📈" label="Dash" active={path === '/dashboard'} />
+            <NavItem to="/admin-users" icon="👥" label="Users" active={path === '/admin-users'} />
+            {/* BOTÓN SALIR ADMIN MÓVIL */}
+            <NavItem to="#" icon="🚪" label="Salir" onClick={handleLogout} />
+          </>
+        ) : (
+          <>
+            <NavItem to="/menu" icon="🥞" label="Menú" active={path === '/menu'} />
+            <NavItem to="/my-orders" icon="📜" label="Pedidos" active={path === '/my-orders'} />
+            <NavItem to="#" icon="🚪" label="Salir" onClick={handleLogout} />
+          </>
+        )}
+      </nav>
+    </>
   );
 }
 
-function AdminUsers() { return <PageTransition><div style={{...styles.container, padding: '20px'}}><h2>Usuarios</h2></div></PageTransition>; }
-
-// --- RUTAS Y APP ---
+// --- APP PRINCIPAL ---
 const PrivateRoute = ({ children }) => localStorage.getItem('token') ? children : <Navigate to="/login" />;
 
 function AnimatedRoutes() {
@@ -330,14 +334,11 @@ function App() {
 
   return (
     <BrowserRouter>
+      {/* Estilos CSS inyectados para Media Queries */}
+      <style>{responsiveStyles}</style>
+      
       <div style={{ backgroundColor: THEME.bg, minHeight: '100vh' }}>
-        {isAuth && (
-          <nav style={{ backgroundColor: '#000', borderBottom: `1px solid ${THEME.border}`, padding: '15px', overflowX: 'auto', display: 'flex', gap: '20px', position: 'sticky', top: 0, zIndex: 100 }}>
-            <a href="/menu" style={{ ...styles.navLink, color: THEME.gold }}>MENÚ</a>
-            {!isAdmin && <a href="/my-orders" style={styles.navLink}>PEDIDOS</a>}
-            {isAdmin && <a href="/dashboard" style={styles.navLink}>ADMIN</a>}
-          </nav>
-        )}
+        {isAuth && <Navigation isAdmin={isAdmin} />}
         <AnimatedRoutes />
       </div>
     </BrowserRouter>
