@@ -138,11 +138,21 @@ function Login() {
   );
 }
 
-// 2. MENÚ CLIENTE
+// 2. MENÚ CLIENTE (CON FILTROS)
 function Menu() {
   const [products, setProducts] = useState([]);
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user') || '{}'));
+  const [selectedCategory, setSelectedCategory] = useState(0); // 0 = Todos
   const navigate = useNavigate();
+
+  // Definimos las categorías manualmente (deben coincidir con los ID de la BD)
+  const categories = [
+    { id: 0, name: 'Todas' },
+    { id: 1, name: 'Dulces 🍫' },
+    { id: 2, name: 'Saladas 🧀' },
+    { id: 3, name: 'Postres 🍦' },
+    { id: 4, name: 'Bebidas 🥤' }
+  ];
 
   useEffect(() => {
     productService.getAll().then(setProducts).catch(console.error);
@@ -165,6 +175,11 @@ function Menu() {
     } catch { alert('Error al pedir'); }
   };
 
+  // Filtramos los productos antes de mostrarlos
+  const filteredProducts = selectedCategory === 0 
+    ? products 
+    : products.filter(p => p.categoria_id === selectedCategory);
+
   return (
     <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
@@ -174,8 +189,31 @@ function Menu() {
           <button onClick={handleLogout} style={{ marginLeft: '10px', background: '#f44', color: 'white', border: 'none', padding: '5px' }}>Salir</button>
         </div>
       </header>
+
+      {/* BARRA DE FILTROS */}
+      <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '15px', marginBottom: '10px' }}>
+        {categories.map(cat => (
+          <button
+            key={cat.id}
+            onClick={() => setSelectedCategory(cat.id)}
+            style={{
+              padding: '8px 16px',
+              borderRadius: '20px',
+              border: 'none',
+              background: selectedCategory === cat.id ? '#e67e22' : '#eee', // Naranja si está activo
+              color: selectedCategory === cat.id ? 'white' : '#333',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {cat.name}
+          </button>
+        ))}
+      </div>
+
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px' }}>
-        {products.map(p => (
+        {filteredProducts.map(p => (
           <div key={p.id} style={{ border: '1px solid #ddd', padding: '15px', borderRadius: '8px' }}>
             <img src={p.imagen_url || 'https://via.placeholder.com/150'} alt={p.nombre} style={{ width: '100%', height: '150px', objectFit: 'cover' }} />
             <h3>{p.nombre}</h3>
@@ -345,7 +383,9 @@ function App() {
         {isAuth && (
           <nav style={{ background: '#333', padding: '10px', display: 'flex', gap: '15px' }}>
             <a href="/menu" style={{ color: 'white' }}>Menú</a>
+            {/* Si NO es admin, muestra Mis Pedidos */}
             {!isAdmin && <a href="/my-orders" style={{ color: 'white' }}>Mis Pedidos</a>}
+            {/* Si ES admin, muestra herramientas de gestión */}
             {isAdmin && (
               <>
                 <a href="/admin-menu" style={{ color: '#fc0' }}>Admin</a>
