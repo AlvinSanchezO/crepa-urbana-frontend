@@ -10,6 +10,9 @@ import {
 } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Navbar from './components/Navbar';
+import Menu from './pages/Menu';
+import { CartProvider } from './context/CartContext';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -134,8 +137,8 @@ function Login() {
   );
 }
 
-// 2. MENÚ
-function Menu() {
+// 2. MENÚ (ANTIGUA - DESHABILITADA - Reemplazada por src/pages/Menu.jsx)
+function OldMenu() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [user] = useState(JSON.parse(localStorage.getItem('user') || '{}'));
@@ -518,15 +521,24 @@ function App() {
   const isAuth = !!localStorage.getItem('token');
   const isAdmin = user.rol === 'admin';
 
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login';
+  };
+
   return (
     <BrowserRouter>
-      <style>{responsiveStyles}</style>
-      <div style={{ backgroundColor: THEME.bg, minHeight: '100vh' }}>
-        {isAuth && <Navigation isAdmin={isAdmin} />}
-        <AnimatedRoutes />
-        {/* TOAST CONTAINER AQUÍ AL FINAL */}
-        <ToastContainer theme="dark" position="bottom-right" />
-      </div>
+      <CartProvider>
+        <style>{responsiveStyles}</style>
+        <div style={{ backgroundColor: THEME.bg, minHeight: '100vh' }}>
+          {isAuth && !isAdmin && <Navbar user={user} onLogout={handleLogout} />}
+          {isAuth && isAdmin && <Navigation isAdmin={isAdmin} />}
+          <AnimatedRoutes />
+          {/* TOAST CONTAINER AQUÍ AL FINAL */}
+          <ToastContainer theme="dark" position="bottom-right" />
+        </div>
+      </CartProvider>
     </BrowserRouter>
   );
 }
