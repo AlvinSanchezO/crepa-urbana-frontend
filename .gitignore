@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Documentación innecesaria
+STRIPE_INTEGRATION.md
+STATUS.txt
+ARCHITECTURE.md
+CODE_EXAMPLES.md
+*.md
+!README.md
