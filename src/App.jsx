@@ -197,9 +197,11 @@ function Menu() {
                     <p style={{ color: '#aaa', fontSize: '0.9rem', marginBottom: '20px', minHeight: '40px' }}>{p.descripcion}</p>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span style={{ fontSize: '1.5rem', fontWeight: 'bold', color: THEME.gold }}>${p.precio}</span>
-                      <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleBuy(p)} disabled={!p.disponible} style={{ padding: '10px 20px', borderRadius: '25px', border: 'none', background: p.disponible ? THEME.gold : '#444', color: p.disponible ? '#000' : '#888', fontWeight: 'bold', cursor: p.disponible ? 'pointer' : 'not-allowed', display:'flex', alignItems:'center', gap:'5px' }}>
-                        {p.disponible ? <><ShoppingCart size={18}/> Agregar</> : 'Sin Stock'}
-                      </motion.button>
+                      {user.rol !== 'admin' && (
+                        <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} onClick={() => handleBuy(p)} disabled={!p.disponible} style={{ padding: '10px 20px', borderRadius: '25px', border: 'none', background: p.disponible ? THEME.gold : '#444', color: p.disponible ? '#000' : '#888', fontWeight: 'bold', cursor: p.disponible ? 'pointer' : 'not-allowed', display:'flex', alignItems:'center', gap:'5px' }}>
+                          {p.disponible ? <><ShoppingCart size={18}/> Agregar</> : 'Sin Stock'}
+                        </motion.button>
+                      )}
                     </div>
                   </div>
                 </motion.div>
@@ -257,6 +259,7 @@ function AdminProducts() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     await productService.create(formData);
+    setFormData({ nombre: '', descripcion: '', precio: '', categoria_id: 1, imagen_url: '' });
     productService.getAll().then(setProducts);
     toast.success('Producto creado exitosamente'); 
   };
@@ -278,13 +281,13 @@ function AdminProducts() {
     <PageTransition>
       <div style={{ ...styles.container, padding: '20px' }}>
         <h2 style={{ color: THEME.gold, marginBottom: '20px' }}><Package style={{marginRight:'10px'}}/>Gestión de Inventario</h2>
-        <div style={{ ...styles.card, marginBottom: '30px' }}>
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gap: '10px' }}>
-            <input style={styles.input} placeholder="Nombre Producto" onChange={e => setFormData({...formData, nombre: e.target.value})} required />
-            <input style={styles.input} placeholder="Descripción" onChange={e => setFormData({...formData, descripcion: e.target.value})} />
-            <input style={styles.input} placeholder="Precio" type="number" onChange={e => setFormData({...formData, precio: e.target.value})} required />
-            <input style={styles.input} placeholder="URL Imagen" onChange={e => setFormData({...formData, imagen_url: e.target.value})} />
-            <button type="submit" style={styles.buttonBase}><CheckCircle /> Agregar Producto</button>
+        <div style={{ background: '#1a1a1a', padding: '25px', borderRadius: '12px', marginBottom: '30px', border: '2px solid #d4af37', boxShadow: '0 4px 15px rgba(212, 175, 55, 0.2)' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+            <input style={{ width: '100%', padding: '12px 15px', borderRadius: '8px', border: '1px solid #d4af37', backgroundColor: '#2c2c2c', color: 'white', boxSizing: 'border-box', transition: 'all 0.3s', margin: 0 }} placeholder="Nombre Producto" onChange={e => setFormData({...formData, nombre: e.target.value})} onFocus={(e) => e.target.style.borderColor = '#ffd700'} onBlur={(e) => e.target.style.borderColor = '#d4af37'} required />
+            <input style={{ width: '100%', padding: '12px 15px', borderRadius: '8px', border: '1px solid #d4af37', backgroundColor: '#2c2c2c', color: 'white', boxSizing: 'border-box', transition: 'all 0.3s', margin: 0 }} placeholder="Precio" type="number" onChange={e => setFormData({...formData, precio: e.target.value})} onFocus={(e) => e.target.style.borderColor = '#ffd700'} onBlur={(e) => e.target.style.borderColor = '#d4af37'} required />
+            <input style={{ width: '100%', padding: '12px 15px', borderRadius: '8px', border: '1px solid #d4af37', backgroundColor: '#2c2c2c', color: 'white', boxSizing: 'border-box', transition: 'all 0.3s', margin: 0, gridColumn: 'span 2' }} placeholder="Descripción" onChange={e => setFormData({...formData, descripcion: e.target.value})} onFocus={(e) => e.target.style.borderColor = '#ffd700'} onBlur={(e) => e.target.style.borderColor = '#d4af37'} />
+            <input style={{ width: '100%', padding: '12px 15px', borderRadius: '8px', border: '1px solid #d4af37', backgroundColor: '#2c2c2c', color: 'white', boxSizing: 'border-box', transition: 'all 0.3s', margin: 0, gridColumn: 'span 2' }} placeholder="URL Imagen" onChange={e => setFormData({...formData, imagen_url: e.target.value})} onFocus={(e) => e.target.style.borderColor = '#ffd700'} onBlur={(e) => e.target.style.borderColor = '#d4af37'} />
+            <button type="submit" style={{ ...styles.buttonBase, background: 'linear-gradient(135deg, #d4af37 0%, #ffd700 100%)', color: '#000', gridColumn: 'span 2', marginBottom: 0, width: '100%', padding: '12px', boxSizing: 'border-box' }} onMouseOver={(e) => e.target.style.boxShadow = '0 6px 20px rgba(212, 175, 55, 0.4)'} onMouseOut={(e) => e.target.style.boxShadow = 'none'}><CheckCircle /> Agregar Producto</button>
           </form>
         </div>
         <div style={{ display: 'grid', gap: '10px' }}>
@@ -355,42 +358,156 @@ function Kitchen() {
 
 // 6. ADMIN: DASHBOARD
 function Dashboard() {
-  const [metrics, setMetrics] = useState(null);
-  useEffect(() => { dashboardService.getMetrics().then(setMetrics).catch(() => setMetrics({})); }, []);
+  const [metrics, setMetrics] = useState({ ventas_hoy: 0, ventas_mes: 0, totalOrders: 0, totalRevenue: 0, top_productos: [] });
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => { 
+    const fetchData = async () => {
+      try {
+        const [metricsData, ordersData] = await Promise.all([
+          dashboardService.getMetrics().catch(() => ({})),
+          orderService.getAll().catch(() => [])
+        ]);
+        
+        setOrders(ordersData.slice(0, 5));
+        
+        const totalOrders = ordersData.length;
+        const totalRevenue = ordersData.reduce((sum, o) => sum + (parseFloat(o.total_pagar) || 0), 0);
+        
+        setMetrics({
+          ventas_hoy: metricsData.ventas_hoy || 0,
+          ventas_mes: metricsData.ventas_mes || 0,
+          top_productos: metricsData.top_productos || [],
+          totalOrders,
+          totalRevenue: Math.round(totalRevenue * 100) / 100
+        });
+      } catch (e) {
+        console.error('Error cargando dashboard:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
 
-  if (!metrics) return (
+  if (loading) return (
     <div style={{ ...styles.container, padding: '20px' }}>
       <Skeleton height="40px" width="300px" style={{marginBottom: '30px'}} />
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
-        <Skeleton height="150px" style={{borderRadius:'12px'}} />
-        <Skeleton height="150px" style={{borderRadius:'12px'}} />
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+        {[1,2,3,4].map(n => <Skeleton key={n} height="150px" style={{borderRadius:'12px'}} />)}
       </div>
       <Skeleton height="400px" style={{borderRadius:'12px'}} />
     </div>
   );
 
   const chartData = {
-    labels: metrics.top_productos?.map(i => i.Product.nombre),
-    datasets: [{ label: 'Ventas', data: metrics.top_productos?.map(i => i.total_vendido), backgroundColor: THEME.gold }]
+    labels: metrics.top_productos?.map(i => i.Product?.nombre) || [],
+    datasets: [{ label: 'Ventas', data: metrics.top_productos?.map(i => i.total_vendido) || [], backgroundColor: THEME.gold }]
   };
+
+  const kpis = [
+    { title: 'Ventas Hoy', value: `$${metrics.ventas_hoy || 0}`, icon: '💰', color: THEME.success },
+    { title: 'Ventas Mes', value: `$${metrics.ventas_mes || 0}`, icon: '📊', color: THEME.gold },
+    { title: 'Total Órdenes', value: metrics.totalOrders || 0, icon: '📦', color: '#3498db' },
+    { title: 'Ingresos Totales', value: `$${metrics.totalRevenue || 0}`, icon: '💎', color: THEME.gold }
+  ];
 
   return (
     <PageTransition>
       <div style={{ ...styles.container, padding: '20px' }}>
-        <h2 style={{ color: THEME.gold, marginBottom:'20px' }}><BarChart3 style={{marginRight:'10px'}}/>Dashboard</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '30px' }}>
-          <div style={{ ...styles.card, textAlign: 'center' }}>
-            <div style={{ fontSize: '0.9em', color: '#888' }}>Ventas Hoy</div>
-            <div style={{ fontSize: '2.5em', fontWeight: 'bold', color: THEME.success }}>${metrics.ventas_hoy}</div>
-          </div>
-          <div style={{ ...styles.card, textAlign: 'center' }}>
-            <div style={{ fontSize: '0.9em', color: '#888' }}>Ventas Mes</div>
-            <div style={{ fontSize: '2.5em', fontWeight: 'bold', color: THEME.gold }}>${metrics.ventas_mes}</div>
-          </div>
-        </div>
-        <div style={{ ...styles.card, height: '400px' }}>
-          <Bar data={chartData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: 'white' } } }, scales: { y: { ticks: { color: 'white' } }, x: { ticks: { color: 'white' } } } }} />
-        </div>
+        <motion.h2 initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ color: THEME.gold, marginBottom:'30px', fontSize: 'clamp(1.5rem, 5vw, 2rem)', display: 'flex', alignItems: 'center', gap: '10px' }}><BarChart3 size={32} />Dashboard</motion.h2>
+        
+        {/* KPIs Grid - Responsive */}
+        <motion.div variants={containerStagger} initial="hidden" animate="show" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '15px', marginBottom: '40px' }}>
+          {kpis.map((kpi, idx) => (
+            <motion.div key={idx} variants={cardItem} style={{ ...styles.card, padding: 'clamp(15px, 4vw, 25px)', textAlign: 'center', borderLeft: `5px solid ${kpi.color}`, boxShadow: `0 4px 15px rgba(212, 175, 55, 0.1)` }} whileHover={{ y: -5, boxShadow: '0 8px 25px rgba(212, 175, 55, 0.2)' }}>
+              <div style={{ fontSize: 'clamp(1.8rem, 6vw, 2.5rem)', marginBottom: '10px' }}>{kpi.icon}</div>
+              <div style={{ fontSize: 'clamp(0.7rem, 2vw, 0.9em)', color: '#888', marginBottom: '8px', fontWeight: '500' }}>{kpi.title}</div>
+              <div style={{ fontSize: 'clamp(1.2rem, 5vw, 2em)', fontWeight: 'bold', color: kpi.color }}>{kpi.value}</div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Gráficos - Responsive */}
+        <motion.div variants={containerStagger} initial="hidden" animate="show" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '40px' }}>
+          {/* Gráfico de Barras */}
+          <motion.div variants={cardItem} style={{ ...styles.card, padding: '20px', height: 'clamp(300px, 60vw, 400px)' }}>
+            <h3 style={{ color: THEME.gold, marginBottom: '20px', marginTop: 0, fontSize: 'clamp(1rem, 3vw, 1.2rem)' }}>📈 Productos Más Vendidos</h3>
+            <Bar data={chartData} options={{ responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, labels: { color: 'white', font: { size: 12 } } } }, scales: { y: { beginAtZero: true, ticks: { color: '#888' }, grid: { color: '#333' } }, x: { ticks: { color: '#888', font: { size: 10 } }, grid: { display: false } } } }} />
+          </motion.div>
+
+          {/* Gráfico Categorías */}
+          <motion.div variants={cardItem} style={{ ...styles.card, padding: '20px', height: 'clamp(300px, 60vw, 400px)', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <h3 style={{ color: THEME.gold, marginBottom: '20px', marginTop: 0, fontSize: 'clamp(1rem, 3vw, 1.2rem)' }}>🥧 Categorías</h3>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ textAlign: 'center', color: '#888' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '10px' }}>📊</div>
+                <p style={{ fontSize: 'clamp(0.8rem, 2vw, 1rem)' }}>Datos de categorías disponibles</p>
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+
+        {/* Tabla de Últimas Órdenes - Responsive */}
+        <motion.div variants={cardItem} style={{ ...styles.card, padding: '20px' }}>
+          <h3 style={{ color: THEME.gold, marginBottom: '20px', marginTop: 0, fontSize: 'clamp(1rem, 3vw, 1.2rem)' }}>📋 Últimas Órdenes</h3>
+          {orders.length === 0 ? (
+            <div style={{ textAlign: 'center', color: '#888', padding: '40px 20px' }}>
+              <p style={{ fontSize: '1.1rem' }}>No hay órdenes recientes</p>
+            </div>
+          ) : (
+            <>
+              {/* Tabla Desktop */}
+              <div style={{ display: 'none', '@media (min-width: 768px)': { display: 'block' }, overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead>
+                    <tr style={{ borderBottom: `2px solid ${THEME.gold}` }}>
+                      <th style={{ padding: '12px', textAlign: 'left', color: THEME.gold, fontWeight: 'bold', fontSize: 'clamp(0.8rem, 2vw, 1rem)' }}>ID</th>
+                      <th style={{ padding: '12px', textAlign: 'left', color: THEME.gold, fontWeight: 'bold', fontSize: 'clamp(0.8rem, 2vw, 1rem)' }}>Cliente</th>
+                      <th style={{ padding: '12px', textAlign: 'left', color: THEME.gold, fontWeight: 'bold', fontSize: 'clamp(0.8rem, 2vw, 1rem)' }}>Productos</th>
+                      <th style={{ padding: '12px', textAlign: 'right', color: THEME.gold, fontWeight: 'bold', fontSize: 'clamp(0.8rem, 2vw, 1rem)' }}>Total</th>
+                      <th style={{ padding: '12px', textAlign: 'center', color: THEME.gold, fontWeight: 'bold', fontSize: 'clamp(0.8rem, 2vw, 1rem)' }}>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {orders.map((o, idx) => (
+                      <tr key={o.id} style={{ borderBottom: `1px solid ${THEME.border}`, background: idx % 2 === 0 ? '#1a1a1a' : 'transparent' }}>
+                        <td style={{ padding: '12px', color: THEME.gold, fontWeight: 'bold', fontSize: '0.9rem' }}>#{o.id}</td>
+                        <td style={{ padding: '12px', color: '#ccc', fontSize: '0.9rem' }}>{o.User?.nombre || 'Usuario'}</td>
+                        <td style={{ padding: '12px', color: '#aaa', fontSize: '0.85rem' }}>{o.items?.length || 0} items</td>
+                        <td style={{ padding: '12px', textAlign: 'right', color: THEME.gold, fontWeight: 'bold', fontSize: '0.9rem' }}>${o.total_pagar}</td>
+                        <td style={{ padding: '12px', textAlign: 'center' }}>
+                          <span style={{ background: o.estado === 'entregado' ? '#27ae60' : o.estado === 'listo' ? '#2ecc71' : o.estado === 'en_preparacion' ? '#3498db' : '#f39c12', color: 'white', padding: '4px 8px', borderRadius: '20px', fontSize: '0.7rem', fontWeight: 'bold', textTransform: 'capitalize' }}>
+                            {o.estado.replace('_', ' ')}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Cards Mobile */}
+              <div style={{ display: 'grid', gap: '15px' }}>
+                {orders.map((o) => (
+                  <div key={o.id} style={{ background: '#1a1a1a', padding: '15px', borderRadius: '8px', border: `1px solid ${THEME.border}` }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                      <span style={{ color: THEME.gold, fontWeight: 'bold', fontSize: '1.1rem' }}>#{o.id}</span>
+                      <span style={{ background: o.estado === 'entregado' ? '#27ae60' : o.estado === 'listo' ? '#2ecc71' : o.estado === 'en_preparacion' ? '#3498db' : '#f39c12', color: 'white', padding: '4px 10px', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'capitalize' }}>
+                        {o.estado.replace('_', ' ')}
+                      </span>
+                    </div>
+                    <div style={{ color: '#ccc', fontSize: '0.9rem', marginBottom: '8px' }}>👤 {o.User?.nombre || 'Usuario'}</div>
+                    <div style={{ color: '#aaa', fontSize: '0.9rem', marginBottom: '8px' }}>📦 {o.items?.length || 0} items</div>
+                    <div style={{ color: THEME.gold, fontWeight: 'bold', fontSize: '1.1rem', textAlign: 'right' }}>💰 ${o.total_pagar}</div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </motion.div>
       </div>
     </PageTransition>
   );
@@ -402,13 +519,26 @@ function AdminUsers() {
   useEffect(() => { userService.getAll().then(setUsers); }, []);
 
   const adjust = async (u) => {
-    // Aquí el prompt es inevitable sin crear un modal personalizado, 
-    // pero al menos no es una "alerta" de información.
     const p = prompt('Puntos (+/-):'); 
     if(p) {
       await userService.adjustPoints(u.id, parseInt(p));
       userService.getAll().then(setUsers);
-      toast.success('Puntos actualizados'); // TOAST
+      toast.success('Puntos actualizados');
+    }
+  };
+
+  const deleteUser = async (u) => {
+    if (window.confirm(`¿Estás seguro de que deseas eliminar a ${u.nombre}?`)) {
+      try {
+        // Intentar con DELETE
+        await api.delete(`/users/${u.id}`);
+        const updatedUsers = users.filter(user => user.id !== u.id);
+        setUsers(updatedUsers);
+        toast.success(`${u.nombre} eliminado correctamente`);
+      } catch (e) {
+        console.error('Error eliminando usuario:', e.response?.data || e.message);
+        toast.error(e.response?.data?.message || 'Error al eliminar usuario');
+      }
     }
   };
 
@@ -425,7 +555,8 @@ function AdminUsers() {
               </div>
               <div style={{display:'flex', alignItems:'center', gap:'15px'}}>
                 <span style={{color:THEME.gold, fontWeight:'bold'}}>💎 {u.puntos_actuales}</span>
-                <button onClick={() => adjust(u)} style={{...styles.buttonBase, width:'auto', padding:'5px 10px', fontSize:'0.8em', background:'#333', color:'white'}}>Ajustar</button>
+                <button onClick={() => adjust(u)} style={{...styles.buttonBase, width:'auto', padding:'5px 10px', fontSize:'0.8em', background:'#3498db', color:'white'}}>Ajustar</button>
+                <button onClick={() => deleteUser(u)} style={{...styles.buttonBase, width:'auto', padding:'5px 10px', fontSize:'0.8em', background:'#e74c3c', color:'white'}}><Trash2 size={16}/></button>
               </div>
             </div>
           ))}
