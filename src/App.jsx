@@ -6,7 +6,8 @@ import { Bar } from 'react-chartjs-2';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   UtensilsCrossed, ClipboardList, Package, ChefHat, BarChart3, Users, LogOut, 
-  ShoppingCart, Gem, ChevronLeft, Trash2, Edit, CheckCircle, XCircle, Menu as MenuIcon 
+  ShoppingCart, Gem, ChevronLeft, Trash2, Edit, CheckCircle, XCircle, Menu as MenuIcon,
+  Eye, EyeOff
 } from 'lucide-react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -99,6 +100,7 @@ const Skeleton = ({ width = '100%', height = '20px', style }) => (
 // 1. LOGIN
 function Login() {
   const [isRegistering, setIsRegistering] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '', nombre: '', telefono: '' });
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -130,9 +132,45 @@ function Login() {
         <h1 style={{ textAlign: 'center', color: THEME.gold, fontFamily: "'Playfair Display', serif", fontSize: '2.5rem' }}>Crepa Urbana</h1>
         <p style={{ textAlign: 'center', color: '#ccc', marginBottom: '20px' }}>La experiencia dulce</p>
         <form onSubmit={handleSubmit}>
-          {isRegistering && <input style={styles.input} placeholder="Nombre" name="nombre" onChange={handleChange} required />}
-          <input style={styles.input} placeholder="Email" name="email" onChange={handleChange} required />
-          <input style={styles.input} placeholder="Password" type="password" name="password" onChange={handleChange} required />
+          {isRegistering && <input style={{ ...styles.input, boxSizing: 'border-box' }} placeholder="Nombre" name="nombre" onChange={handleChange} required />}
+          <input style={{ ...styles.input, boxSizing: 'border-box' }} placeholder="Email" name="email" onChange={handleChange} required />
+          
+          {/* Password con toggle */}
+          <div style={{ position: 'relative', marginBottom: '15px' }}>
+            <input 
+              style={{
+                ...styles.input,
+                paddingRight: '45px',
+                boxSizing: 'border-box'
+              }} 
+              placeholder="Password" 
+              type={showPassword ? 'text' : 'password'} 
+              name="password" 
+              onChange={handleChange} 
+              required 
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              style={{
+                position: 'absolute',
+                right: '15px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                color: THEME.gold,
+                padding: '0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
+          </div>
+
           <motion.button whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} type="submit" style={{ ...styles.buttonBase, background: THEME.gold, color: '#000' }}>{isRegistering ? 'Registrarse' : 'Entrar'}</motion.button>
           <p onClick={() => setIsRegistering(!isRegistering)} style={{ textAlign: 'center', color: THEME.gold, cursor: 'pointer', marginTop: '15px', textDecoration: 'underline' }}>{isRegistering ? '¿Ya tienes cuenta?' : '¿Crear cuenta?'}</p>
         </form>
