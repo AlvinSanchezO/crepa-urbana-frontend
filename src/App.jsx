@@ -110,11 +110,18 @@ function Login() {
         toast.success('¡Registro exitoso! Por favor inicia sesión.'); 
         setIsRegistering(false);
       } else {
-        await authService.login(formData.email, formData.password);
+        const loginData = await authService.login(formData.email, formData.password);
+        const user = loginData.user || JSON.parse(localStorage.getItem('user') || '{}');
+        
         toast.success('¡Bienvenido a Crepa Urbana!', { icon: "👋" });
-        setTimeout(() => window.location.href = '/menu', 500);
+        
+        // Redirigir según rol
+        const redirectTo = user.rol === 'admin' ? '/dashboard' : '/menu';
+        setTimeout(() => window.location.href = redirectTo, 500);
       }
-    } catch (e) { toast.error(e.response?.data?.message || 'Error en la operación'); }
+    } catch (e) { 
+      toast.error(e.response?.data?.message || 'Error en la operación'); 
+    }
   };
 
   return (
@@ -624,7 +631,29 @@ function Navigation({ isAdmin }) {
 }
 
 // --- APP PRINCIPAL ---
-const PrivateRoute = ({ children }) => localStorage.getItem('token') ? children : <Navigate to="/login" />;
+// --- COMPONENTES DE PROTECCIÓN DE RUTAS ---
+const PrivateRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  return token ? children : <Navigate to="/login" replace />;
+};
+
+const ProtectedAdminRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  
+  // Si no hay token, ir a login
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Si no es admin, ir a menu
+  if (user.rol !== 'admin') {
+    return <Navigate to="/menu" replace />;
+  }
+  
+  // Si es admin autenticado, mostrar contenido
+  return children;
+};
 
 function AnimatedRoutes() {
   const location = useLocation();
@@ -634,10 +663,10 @@ function AnimatedRoutes() {
         <Route path="/login" element={<Login />} />
         <Route path="/menu" element={<PrivateRoute><Menu /></PrivateRoute>} />
         <Route path="/my-orders" element={<PrivateRoute><MyOrders /></PrivateRoute>} />
-        <Route path="/admin-menu" element={<PrivateRoute><AdminProducts /></PrivateRoute>} />
-        <Route path="/kitchen" element={<PrivateRoute><Kitchen /></PrivateRoute>} />
-        <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-        <Route path="/admin-users" element={<PrivateRoute><AdminUsers /></PrivateRoute>} />
+        <Route path="/admin-menu" element={<ProtectedAdminRoute><AdminProducts /></ProtectedAdminRoute>} />
+        <Route path="/kitchen" element={<ProtectedAdminRoute><Kitchen /></ProtectedAdminRoute>} />
+        <Route path="/dashboard" element={<ProtectedAdminRoute><Dashboard /></ProtectedAdminRoute>} />
+        <Route path="/admin-users" element={<ProtectedAdminRoute><AdminUsers /></ProtectedAdminRoute>} />
         <Route path="*" element={<Navigate to="/menu" replace />} />
       </Routes>
     </AnimatePresence>
