@@ -87,13 +87,15 @@ function Menu() {
                 <span style={{ fontWeight: 'bold', fontSize: '1.2em', color: '#e67e22' }}>${product.precio}</span>
                 {product.disponible ? <span style={{ color: 'green', fontSize: '0.8em' }}>✅ Disponible</span> : <span style={{ color: 'red', fontSize: '0.8em' }}>❌ Agotado</span>}
               </div>
-              <button 
-                onClick={() => handleBuy(product)}
-                disabled={!product.disponible}
-                style={{ width: '100%', padding: '10px', background: product.disponible ? '#2ecc71' : '#ccc', color: 'white', border: 'none', borderRadius: '5px', cursor: product.disponible ? 'pointer' : 'not-allowed', fontWeight: 'bold' }}
-              >
-                {product.disponible ? '🛒 Comprar' : 'Sin Stock'}
-              </button>
+              {user.rol !== 'admin' && (
+                <button 
+                  onClick={() => handleBuy(product)}
+                  disabled={!product.disponible}
+                  style={{ width: '100%', padding: '10px', background: product.disponible ? '#2ecc71' : '#ccc', color: 'white', border: 'none', borderRadius: '5px', cursor: product.disponible ? 'pointer' : 'not-allowed', fontWeight: 'bold' }}
+                >
+                  {product.disponible ? '🛒 Comprar' : 'Sin Stock'}
+                </button>
+              )}
             </div>
           </div>
         ))}

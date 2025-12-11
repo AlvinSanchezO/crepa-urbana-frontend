@@ -77,27 +77,27 @@ function AdminProducts() {
       <h1>Panel de Administración: Menú 🛠️</h1>
       
       {/* FORMULARIO */}
-      <div style={{ background: '#f4f4f4', padding: '20px', borderRadius: '8px', marginBottom: '30px' }}>
-        <h3>{editingProduct ? 'Editar Producto' : 'Agregar Nuevo Producto'}</h3>
-        <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-          <input placeholder="Nombre" value={formData.nombre} onChange={e => setFormData({...formData, nombre: e.target.value})} required style={{padding: '8px'}} />
-          <input placeholder="Precio" type="number" value={formData.precio} onChange={e => setFormData({...formData, precio: e.target.value})} required style={{padding: '8px'}} />
-          <input placeholder="Descripción" value={formData.descripcion} onChange={e => setFormData({...formData, descripcion: e.target.value})} style={{padding: '8px', gridColumn: 'span 2'}} />
-          <input placeholder="URL Imagen" value={formData.imagen_url} onChange={e => setFormData({...formData, imagen_url: e.target.value})} style={{padding: '8px', gridColumn: 'span 2'}} />
+      <div style={{ background: '#1a1a1a', padding: '25px', borderRadius: '12px', marginBottom: '30px', border: '2px solid #d4af37', boxShadow: '0 4px 15px rgba(212, 175, 55, 0.2)' }}>
+        <h3 style={{ color: '#d4af37', marginTop: 0, marginBottom: '20px', fontSize: '1.2rem' }}>{editingProduct ? 'Editar Producto' : 'Agregar Nuevo Producto'}</h3>
+        <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+          <input placeholder="Nombre" value={formData.nombre} onChange={e => setFormData({...formData, nombre: e.target.value})} required style={{ padding: '12px 15px', background: '#2c2c2c', border: '1px solid #d4af37', borderRadius: '8px', color: '#fff', fontSize: '1rem', boxSizing: 'border-box', outline: 'none' }} onFocus={(e) => e.target.style.borderColor = '#ffd700'} onBlur={(e) => e.target.style.borderColor = '#d4af37'} />
+          <input placeholder="Precio" type="number" value={formData.precio} onChange={e => setFormData({...formData, precio: e.target.value})} required style={{ padding: '12px 15px', background: '#2c2c2c', border: '1px solid #d4af37', borderRadius: '8px', color: '#fff', fontSize: '1rem', boxSizing: 'border-box', outline: 'none' }} onFocus={(e) => e.target.style.borderColor = '#ffd700'} onBlur={(e) => e.target.style.borderColor = '#d4af37'} />
+          <input placeholder="Descripción" value={formData.descripcion} onChange={e => setFormData({...formData, descripcion: e.target.value})} style={{ padding: '12px 15px', background: '#2c2c2c', border: '1px solid #d4af37', borderRadius: '8px', color: '#fff', fontSize: '1rem', boxSizing: 'border-box', outline: 'none', gridColumn: 'span 2' }} onFocus={(e) => e.target.style.borderColor = '#ffd700'} onBlur={(e) => e.target.style.borderColor = '#d4af37'} />
+          <input placeholder="URL Imagen" value={formData.imagen_url} onChange={e => setFormData({...formData, imagen_url: e.target.value})} style={{ padding: '12px 15px', background: '#2c2c2c', border: '1px solid #d4af37', borderRadius: '8px', color: '#fff', fontSize: '1rem', boxSizing: 'border-box', outline: 'none', gridColumn: 'span 2' }} onFocus={(e) => e.target.style.borderColor = '#ffd700'} onBlur={(e) => e.target.style.borderColor = '#d4af37'} />
           
-          <select value={formData.categoria_id} onChange={e => setFormData({...formData, categoria_id: e.target.value})} style={{padding: '8px'}}>
+          <select value={formData.categoria_id} onChange={e => setFormData({...formData, categoria_id: e.target.value})} style={{ padding: '12px 15px', background: '#2c2c2c', border: '1px solid #d4af37', borderRadius: '8px', color: '#fff', fontSize: '1rem', boxSizing: 'border-box', outline: 'none' }} onFocus={(e) => e.target.style.borderColor = '#ffd700'} onBlur={(e) => e.target.style.borderColor = '#d4af37'}>
             <option value="1">Dulces</option>
             <option value="2">Saladas</option>
             <option value="3">Postres</option>
             <option value="4">Bebidas</option>
           </select>
 
-          <div style={{ gridColumn: 'span 2', marginTop: '10px' }}>
-            <button type="submit" style={{ padding: '10px 20px', background: '#2ecc71', color: 'white', border: 'none', cursor: 'pointer', marginRight: '10px' }}>
+          <div style={{ gridColumn: 'span 2', marginTop: '10px', display: 'flex', gap: '10px' }}>
+            <button type="submit" style={{ padding: '12px 25px', background: 'linear-gradient(135deg, #d4af37 0%, #ffd700 100%)', color: '#000', border: 'none', cursor: 'pointer', borderRadius: '8px', fontWeight: 'bold', fontSize: '1rem', transition: 'all 0.3s', flex: 1 }} onMouseOver={(e) => e.target.style.boxShadow = '0 6px 20px rgba(212, 175, 55, 0.4)'} onMouseOut={(e) => e.target.style.boxShadow = 'none'}>
               {editingProduct ? 'Guardar Cambios' : 'Crear Producto'}
             </button>
             {editingProduct && (
-              <button type="button" onClick={() => {setEditingProduct(null); setFormData({ nombre: '', descripcion: '', precio: '', categoria_id: 1, imagen_url: '' })}} style={{ padding: '10px', background: '#95a5a6', color: 'white', border: 'none', cursor: 'pointer' }}>
+              <button type="button" onClick={() => {setEditingProduct(null); setFormData({ nombre: '', descripcion: '', precio: '', categoria_id: 1, imagen_url: '' })}} style={{ padding: '12px 25px', background: '#555', color: 'white', border: 'none', cursor: 'pointer', borderRadius: '8px', fontWeight: 'bold', fontSize: '1rem' }}>
                 Cancelar
               </button>
             )}
