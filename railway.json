@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npm run build",
+  "startCommand": "npm run preview",
+  "envs": {
+    "VITE_API_URL": {
+      "description": "API URL for the backend",
+      "value": "https://crepa-urbana-backend-production.up.railway.app"
+    },
+    "VITE_STRIPE_PUBLIC_KEY": {
+      "description": "Stripe public key",
+      "value": "pk_test_51ScamzPz6W8JeHACaUI2G38dBk13qO5mbGJm4fLNP0ftS9EgoMN5iMx3wOvAmIaJeTkkxo2689Qu6fsc4RJD1AyZ00tSL06kMe"
+    }
+  }
+}
