@@ -27,7 +27,7 @@ function Login() {
             type="email" 
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            autocomplete="email"
+            autoComplete="email"
             style={{ width: '100%', padding: '8px' }}
           />
         </div>
@@ -37,7 +37,7 @@ function Login() {
             type="password" 
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            autocomplete="current-password"
+            autoComplete="current-password"
             style={{ width: '100%', padding: '8px' }}
           />
         </div>
