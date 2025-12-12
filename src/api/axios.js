@@ -1,8 +1,9 @@
 import axios from 'axios';
 
-// Obtener la URL del API desde la variable global definida en vite.config.js
-const apiUrl = __API_URL__ || 'http://localhost:3000';
-console.log('API URL configured as:', apiUrl);
+// Obtener la URL del API desde la variable de entorno de Vite
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+console.log('API URL:', apiUrl);
+console.log('All env vars:', import.meta.env);
 
 // Crear una instancia base
 const api = axios.create({
