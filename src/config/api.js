@@ -1,4 +1,4 @@
-export const getApiUrl = async () => {
+export const getApiUrl = () => {
   // En producción, usa la URL de Railway
   if (window.location.hostname.includes('railway.app')) {
     return 'https://crepa-urbana-backend-production.up.railway.app';

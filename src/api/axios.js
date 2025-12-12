@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { getApiUrl } from '../config/api';
 
-// Determinar la URL del API en tiempo de ejecución (no en build time)
-const apiUrl = await getApiUrl();
+// Obtener la URL del API en tiempo de ejecución
+const apiUrl = getApiUrl();
 console.log('API URL at runtime:', apiUrl);
 
 // Crear una instancia base
