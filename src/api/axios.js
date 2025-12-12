@@ -1,10 +1,13 @@
 import axios from 'axios';
+import { getApiUrl } from '../config/api';
 
-// Hardcode the API URL based on the environment
-const API_URL = 'https://crepa-urbana-backend-production.up.railway.app';
+// Determinar la URL del API en tiempo de ejecución (no en build time)
+const apiUrl = await getApiUrl();
+console.log('API URL at runtime:', apiUrl);
 
+// Crear una instancia base
 const api = axios.create({
-  baseURL: `${API_URL}/api`,
+  baseURL: `${apiUrl}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
