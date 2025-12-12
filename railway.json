@@ -1,6 +1,6 @@
 {
   "buildCommand": "npm run build",
-  "startCommand": "npm run preview",
+  "startCommand": "npm install -g http-server && http-server dist -p 8080",
   "envs": {
     "VITE_API_URL": {
       "description": "API URL for the backend",
