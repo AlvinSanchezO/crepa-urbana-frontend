@@ -1,13 +1,25 @@
 import axios from 'axios';
 
-// Obtener la URL del API desde la variable de entorno de Vite
-const apiUrl = import.meta.env.VITE_API_URL;
-console.log('API URL from env:', apiUrl);
-console.log('VITE_API_URL env var:', import.meta.env.VITE_API_URL);
+// Determinar la URL del API basándose en el hostname
+const getApiUrl = () => {
+  const hostname = window.location.hostname;
+  
+  // Si estamos en Railway production
+  if (hostname.includes('railway.app')) {
+    return 'https://crepa-urbana-backend-production.up.railway.app';
+  }
+  
+  // Si estamos en localhost (desarrollo)
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:3000';
+  }
+  
+  // Fallback a la variable de entorno o Railway
+  return import.meta.env.VITE_API_URL || 'https://crepa-urbana-backend-production.up.railway.app';
+};
 
-if (!apiUrl) {
-  console.error('WARNING: VITE_API_URL is not defined!');
-}
+const apiUrl = getApiUrl();
+console.log('API URL:', apiUrl);
 
 // Crear una instancia base
 const api = axios.create({
