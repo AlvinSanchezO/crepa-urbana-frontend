@@ -1,29 +1,10 @@
 import axios from 'axios';
 
-// Determinar la URL del API basándose en el hostname
-const getApiUrl = () => {
-  const hostname = window.location.hostname;
-  
-  // Si estamos en Railway production
-  if (hostname.includes('railway.app')) {
-    return 'https://crepa-urbana-backend-production.up.railway.app';
-  }
-  
-  // Si estamos en localhost (desarrollo)
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:3000';
-  }
-  
-  // Fallback a la variable de entorno o Railway
-  return import.meta.env.VITE_API_URL || 'https://crepa-urbana-backend-production.up.railway.app';
-};
+// Hardcode the API URL based on the environment
+const API_URL = 'https://crepa-urbana-backend-production.up.railway.app';
 
-const apiUrl = getApiUrl();
-console.log('API URL:', apiUrl);
-
-// Crear una instancia base
 const api = axios.create({
-  baseURL: `${apiUrl}/api`,
+  baseURL: `${API_URL}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
